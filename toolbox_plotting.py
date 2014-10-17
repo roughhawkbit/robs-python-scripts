@@ -34,8 +34,10 @@ class JournalFigure:
         axis.spines['right'].set_color('none')
         axis.spines['left'].set_color('none')
         axis.spines['top'].set_color('none')
-    def add_subplot(self, label, position, frameon=True, aspect='auto'):
-        axis = self.fig.add_subplot(position, frameon=frameon, aspect=aspect)
+    def add_subplot(self, label, position,
+                            frameon=True, aspect='auto', axisbg='w'):
+        axis = self.fig.add_subplot(position,
+                    frameon=frameon, aspect=aspect, axisbg=axisbg)
         setp( axis.get_xticklabels(), visible=frameon)
         setp( axis.get_yticklabels(), visible=frameon)
         if not frameon:
@@ -233,8 +235,8 @@ class SlideFigure(JournalFigure):
         matplotlib.rc('mathtext', fontset='stixsans', default='regular')
         matplotlib.rcParams['xtick.direction'] = 'out'
         matplotlib.rcParams['ytick.direction'] = 'out'
-        self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height),
-                                                             facecolor='white')
+        self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height))#,
+                                                             #facecolor='white')
     def process_subplots(self):
         for axis, label in self.subplots.iteritems():
             axis.text(-0.25, 1.02, label, transform=axis.transAxes,

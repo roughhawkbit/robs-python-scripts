@@ -1,5 +1,10 @@
 # Manually added by Rob
-not_for_github/*
+frameshift*
+nrm*
+results*
+syntrophy*
+toolbox_elmer.py
+toolbox_transcription.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
