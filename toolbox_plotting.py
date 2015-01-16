@@ -5,6 +5,7 @@ import matplotlib
 from matplotlib import rcParams
 from matplotlib import pyplot
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
 #import Image
 from pylab import *
@@ -35,9 +36,12 @@ class JournalFigure:
         axis.spines['left'].set_color('none')
         axis.spines['top'].set_color('none')
     def add_subplot(self, label, position,
-                            frameon=True, aspect='auto', axisbg='w'):
-        axis = self.fig.add_subplot(position,
-                    frameon=frameon, aspect=aspect, axisbg=axisbg)
+                    frameon=True, aspect='auto', axisbg='w', projection=None):
+        axis = self.fig.add_subplot(position, aspect=aspect,
+                                     axisbg=axisbg, projection=projection)
+        # Moved frameon here as the keyword was causing problems in 3D plots
+        if not frameon:
+            axis.axis('off')
         setp( axis.get_xticklabels(), visible=frameon)
         setp( axis.get_yticklabels(), visible=frameon)
         if not frameon:
@@ -231,13 +235,16 @@ class SlideFigure(JournalFigure):
         JournalFigure.__init__(self)
         self.height = height
         self.width = width
-        matplotlib.rc('font',**{'family':'sans serif','weight':'normal','size':10})
+        matplotlib.rc('font',**{'family':'sans serif',
+                                'weight':'normal',
+                                'size':10})
         matplotlib.rc('mathtext', fontset='stixsans', default='regular')
         matplotlib.rcParams['xtick.direction'] = 'out'
         matplotlib.rcParams['ytick.direction'] = 'out'
-        self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height))#,
-                                                             #facecolor='white')
-    def process_subplots(self):
+        self.fig = matplotlib.pyplot.figure(
+                    figsize=(self.width, self.height))
+    def process_subplots(self, padding=0.02):
+        self.inset_axes(padding=padding)
         for axis, label in self.subplots.iteritems():
             axis.text(-0.25, 1.02, label, transform=axis.transAxes,
                                     va='top', fontsize=12, fontweight='bold')
