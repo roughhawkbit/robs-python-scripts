@@ -109,7 +109,7 @@ class BmcFigure(JournalFigure):
         # the figure!
         self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height),
                                                              facecolor='white')
-    def process_subplots(self, label_pos=(-0.20, 1.01)):
+    def process_subplots(self, label_pos=(-0.20, 1.01), padding=0.02):
         for axis, label in self.subplots.iteritems():
             xlim = axis.get_xlim()
             xdiff = 0.02*(xlim[1] - xlim[0])
@@ -425,9 +425,9 @@ class ScatterRow:
             point.plot(axis)
 
 
-def padding_axis(axis, side="right"):
+def padding_axis(axis, side="right", pad=0.04):
     divider = make_axes_locatable(axis)
-    cax = divider.append_axes(side, size="5%", pad=0.04, axisbg='none')
+    cax = divider.append_axes(side, size="5%", pad=pad, axisbg='none')
     return cax
 
 
@@ -441,8 +441,8 @@ def empty_padding_axis(axis, side="right"):
     return cax
 
 
-def make_colorbar(axis, colorscheme, side="right", fontsize=10):
-    cax = padding_axis(axis, side=side)
+def make_colorbar(axis, colorscheme, side="right", fontsize=10, pad=0.04):
+    cax = padding_axis(axis, side=side, pad=pad)
     orientation = 'vertical' if side in ["right", "left"] else 'horizontal'
     cbar = pyplot.colorbar(colorscheme, cax=cax, orientation=orientation)
     cbar.ax.tick_params(labelsize=fontsize)

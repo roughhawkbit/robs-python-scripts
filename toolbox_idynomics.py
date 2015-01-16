@@ -1,12 +1,10 @@
 #!/usr/bin/python
 from __future__ import division
 from __future__ import with_statement
-import matplotlib
 import numpy
 import os
 import sys
 import toolbox_basic
-import toolbox_plotting
 import toolbox_results
 import toolbox_schematic
 
