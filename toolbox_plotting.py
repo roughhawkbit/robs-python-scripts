@@ -5,6 +5,7 @@ import matplotlib
 from matplotlib import rcParams
 from matplotlib import pyplot
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
 #import Image
 from pylab import *
@@ -35,9 +36,12 @@ class JournalFigure:
         axis.spines['left'].set_color('none')
         axis.spines['top'].set_color('none')
     def add_subplot(self, label, position,
-                            frameon=True, aspect='auto', axisbg='w'):
-        axis = self.fig.add_subplot(position,
-                    frameon=frameon, aspect=aspect, axisbg=axisbg)
+                    frameon=True, aspect='auto', axisbg='w', projection=None):
+        axis = self.fig.add_subplot(position, aspect=aspect,
+                                     axisbg=axisbg, projection=projection)
+        # Moved frameon here as the keyword was causing problems in 3D plots
+        if not frameon:
+            axis.axis('off')
         setp( axis.get_xticklabels(), visible=frameon)
         setp( axis.get_yticklabels(), visible=frameon)
         if not frameon:
@@ -109,7 +113,7 @@ class BmcFigure(JournalFigure):
         # the figure!
         self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height),
                                                              facecolor='white')
-    def process_subplots(self, label_pos=(-0.20, 1.01)):
+    def process_subplots(self, label_pos=(-0.20, 1.01), padding=0.02):
         for axis, label in self.subplots.iteritems():
             xlim = axis.get_xlim()
             xdiff = 0.02*(xlim[1] - xlim[0])
@@ -231,13 +235,16 @@ class SlideFigure(JournalFigure):
         JournalFigure.__init__(self)
         self.height = height
         self.width = width
-        matplotlib.rc('font',**{'family':'sans serif','weight':'normal','size':10})
+        matplotlib.rc('font',**{'family':'sans serif',
+                                'weight':'normal',
+                                'size':10})
         matplotlib.rc('mathtext', fontset='stixsans', default='regular')
         matplotlib.rcParams['xtick.direction'] = 'out'
         matplotlib.rcParams['ytick.direction'] = 'out'
-        self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height))#,
-                                                             #facecolor='white')
-    def process_subplots(self):
+        self.fig = matplotlib.pyplot.figure(
+                    figsize=(self.width, self.height))
+    def process_subplots(self, padding=0.02):
+        self.inset_axes(padding=padding)
         for axis, label in self.subplots.iteritems():
             axis.text(-0.25, 1.02, label, transform=axis.transAxes,
                                     va='top', fontsize=12, fontweight='bold')
@@ -425,9 +432,9 @@ class ScatterRow:
             point.plot(axis)
 
 
-def padding_axis(axis, side="right"):
+def padding_axis(axis, side="right", pad=0.04):
     divider = make_axes_locatable(axis)
-    cax = divider.append_axes(side, size="5%", pad=0.04, axisbg='none')
+    cax = divider.append_axes(side, size="5%", pad=pad, axisbg='none')
     return cax
 
 
@@ -441,8 +448,8 @@ def empty_padding_axis(axis, side="right"):
     return cax
 
 
-def make_colorbar(axis, colorscheme, side="right", fontsize=10):
-    cax = padding_axis(axis, side=side)
+def make_colorbar(axis, colorscheme, side="right", fontsize=10, pad=0.04):
+    cax = padding_axis(axis, side=side, pad=pad)
     orientation = 'vertical' if side in ["right", "left"] else 'horizontal'
     cbar = pyplot.colorbar(colorscheme, cax=cax, orientation=orientation)
     cbar.ax.tick_params(labelsize=fontsize)

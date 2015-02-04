@@ -2,12 +2,10 @@
 from __future__ import division
 from __future__ import with_statement
 import glob
-import math
 import numpy
 import os
 import platform
 import shutil
-import sys
 import xml.etree.ElementTree as xmlTree
 import zipfile
 
