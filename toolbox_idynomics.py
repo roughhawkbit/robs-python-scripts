@@ -18,25 +18,37 @@ class SimulationDirectory:
         self.iterate_information = []
         self.min_max_concns = {}
         # agent_Sum
-        self.agent_Sum = os.path.join(self.path, 'agent_Sum')
-        if not os.path.isdir( self.agent_Sum ):
-            toolbox_basic.unzip_files(self.agent_Sum + '.zip')
-        self.agent_Sum = toolbox_basic.check_path(self.agent_Sum)
+        try:
+            self.agent_Sum = os.path.join(self.path, 'agent_Sum')
+            if not os.path.isdir( self.agent_Sum ):
+                toolbox_basic.unzip_files(self.agent_Sum + '.zip')
+            self.agent_Sum = toolbox_basic.check_path(self.agent_Sum)
+        except TypeError:
+            print('Could not find agent_Sum info! '+self.path)
         # agent_State
-        self.agent_State = os.path.join(self.path, 'agent_State')
-        if not os.path.isdir( self.agent_State ):
-            toolbox_basic.unzip_files(self.agent_State + '.zip')
-        self.agent_State = toolbox_basic.check_path(self.agent_State)
+        try:
+            self.agent_State = os.path.join(self.path, 'agent_State')
+            if not os.path.isdir( self.agent_State ):
+                toolbox_basic.unzip_files(self.agent_State + '.zip')
+            self.agent_State = toolbox_basic.check_path(self.agent_State)
+        except TypeError:
+            print('Could not find agent_State info! '+self.path)
         # env_Sum
-        self.env_Sum = os.path.join(self.path, 'env_Sum')
-        if not os.path.isdir( self.env_Sum ):
-            toolbox_basic.unzip_files(self.env_Sum + '.zip')
-        self.env_Sum = toolbox_basic.check_path(self.env_Sum)
+        try:
+            self.env_Sum = os.path.join(self.path, 'env_Sum')
+            if not os.path.isdir( self.env_Sum ):
+                toolbox_basic.unzip_files(self.env_Sum + '.zip')
+            self.env_Sum = toolbox_basic.check_path(self.env_Sum)
+        except TypeError:
+            print('Could not find env_Sum info! '+self.path)
         # env_State
-        self.env_State = os.path.join(self.path, 'env_State')
-        if not os.path.isdir( self.env_State ):
-            toolbox_basic.unzip_files(self.env_State + '.zip')
-        self.env_State = toolbox_basic.check_path(self.env_State)
+        try:
+            self.env_State = os.path.join(self.path, 'env_State')
+            if not os.path.isdir( self.env_State ):
+                toolbox_basic.unzip_files(self.env_State + '.zip')
+            self.env_State = toolbox_basic.check_path(self.env_State)
+        except TypeError:
+            print('Could not find env_State info! '+self.path)
         # Figures directory
         self.figures_dir = os.path.join(self.path, 'figures')
         if not os.path.isdir(self.figures_dir):
@@ -167,7 +179,12 @@ def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0):
     """
     (x, y, z) = cell_output.get_location()
     rad = cell_output.get_radius(total_radius=total_radius)
-    col = (0, 1, 0) if cell_output.color == None else cell_output.color
+    if cell_output.color == None:
+        print 'Cell has no defined color!'
+        col = (0, 1, 0)
+    else:
+        col = cell_output.color
+    #col = (0, 1, 0) if cell_output.color == None else cell_output.color
     #col = cell_output.color
     circle = toolbox_schematic.Circle()
     circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
