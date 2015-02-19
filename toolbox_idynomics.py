@@ -51,6 +51,9 @@ class SimulationDirectory:
         self.figures_dir = os.path.join(self.path, 'figures')
         if not os.path.isdir(self.figures_dir):
             toolbox_basic.make_dir(self.figures_dir)
+        self.movies_dir = os.path.join(self.path, 'movies')
+        if not os.path.isdir(self.movies_dir):
+            toolbox_basic.make_dir(self.movies_dir)
 
 
     def get_iterate_numbers(self):
@@ -70,12 +73,17 @@ class SimulationDirectory:
         Tries to read in all of the iterates for this simulation. Can be
         time-consuming for large or long simulations.
         """
-        if self.iterate_information == []:
-            for i in self.get_iterate_numbers():
-                self.iterate_information.append(IterateInformation(self, i))
-                print 'got info for iterate '+str(i)
+        #if self.iterate_information == []:
+        for i in self.get_iterate_numbers():
+            self.iterate_information.append(IterateInformation(self, i))
         return self.iterate_information
-
+    
+    def get_last_iterate_number(self):
+        """
+        
+        """
+        return max(self.get_iterate_numbers())
+    
     def get_single_iterate(self, number):
         """
         Tries to get information for a single iteration, first by checking the
@@ -92,9 +100,9 @@ class SimulationDirectory:
         """
 
         """
-        for solute_name in self.get_solute_names():
-            self.min_max_concns[solute_name] = [sys.float_info.max, 0.0]
-        if self.min_max_concns == {}:
+        if self.min_max_concns == {}:        
+            for solute_name in self.get_solute_names():
+                self.min_max_concns[solute_name] = [sys.float_info.max, 0.0]
             for i in self.get_iterate_information():
                 iter_min_max = i.get_min_max_concns()
                 for solute_name in self.min_max_concns.keys():
