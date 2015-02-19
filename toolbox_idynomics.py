@@ -73,6 +73,7 @@ class SimulationDirectory:
         if self.iterate_information == []:
             for i in self.get_iterate_numbers():
                 self.iterate_information.append(IterateInformation(self, i))
+                print 'got info for iterate '+str(i)
         return self.iterate_information
 
     def get_single_iterate(self, number):

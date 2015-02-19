@@ -1,10 +1,8 @@
 #!/usr/bin/python
 from __future__ import division
 from __future__ import with_statement
-import numpy
 import os
 from optparse import OptionParser
-import toolbox_basic
 import toolbox_idynomics
 import toolbox_plotting
 import toolbox_results
@@ -16,7 +14,7 @@ parser.add_option("-r", "--ResultsDir", dest="results_dir", default=os.getcwd(),
 parser.add_option("-i", "--IterateNum", dest="iter_num", default=0,
                     type="int", help="number of the iterate to be plotted")
 parser.add_option("-a", "--PlotAll", dest="plot_all", default=False,
-                    action="store_true", help="plot all iterates, ignoring -s")
+                    action="store_true", help="plot all iterates, ignoring -i")
 parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",
                     help="name of the solute to be plotted behind cells")
 parser.add_option("-b", "--ColorBar", dest="color_bar", default=True,
@@ -51,30 +49,27 @@ def plot(iter_info, min_max_concns):
     toolbox_idynomics.color_cells_by_species(iter_info.agent_output,
                                                             species_color_dict)
     toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
-    solute_output = toolbox_results.SoluteOutput(iter_info.env_output,
-                                                name=options.solute_name)
-    cs = toolbox_idynomics.solute_contour(axis, solute_output,
+    if not options.solute_name == "none":
+        solute_output = toolbox_results.SoluteOutput(iter_info.env_output,
+                                                     name=options.solute_name)
+        cs = toolbox_idynomics.solute_contour(axis, solute_output,
                             concn_range=min_max_concns[options.solute_name],
                                                     interpolation='bicubic')
-    '''
-
-    x = numpy.linspace(0, nI * res, nI)
-    y = numpy.linspace(0, nJ * res, nJ)
-    axis.contour(x, y, array, colors='k')
-    '''
-    if options.color_bar:
-        toolbox_plotting.make_colorbar(axis, cs)
+        if options.color_bar:
+            toolbox_plotting.make_colorbar(axis, cs)
     #axis.set_title(r'Biofilm (%s g.L$^{-1}$)'%(solute_name))
-    lb, rt = 0.0, 1.0
+    lb, rt = 0.01, 0.99
+    figure.inset_axes()
     figure.subplots_adjust(left=lb, bottom=lb, right=rt, top=rt)
     figure.save(os.path.join(sim.figures_dir,
                 'biofilm_%s(%d).png'%(options.solute_name, iter_info.number)))
 
 
 if options.plot_all:
-    min_max_concns = sim_dir.get_min_max_concns()
-    for i in sim.get_iterate_information():
-        plot(i, min_max_concns)
+    min_max_concns = sim.get_min_max_concns()
+    for i in sim.get_iterate_numbers():
+        iter_info = sim.get_single_iterate(i)
+        plot(iter_info, min_max_concns)
 else:
     iter_info = sim.get_single_iterate(options.iter_num)
     min_max_concns = iter_info.get_min_max_concns()
