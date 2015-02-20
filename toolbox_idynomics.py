@@ -6,8 +6,9 @@ import os
 import sys
 import toolbox_basic
 import toolbox_results
-import toolbox_schematic
+import toolbox_schematic_new as toolbox_schematic
 
+pi = numpy.pi
 
 class SimulationDirectory:
     def __init__(self, path):
@@ -180,7 +181,7 @@ class IterateInformation:
 
 
 
-def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0):
+def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0, y_limits=None):
     """
 
     """
@@ -193,10 +194,27 @@ def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0):
         col = cell_output.color
     #col = (0, 1, 0) if cell_output.color == None else cell_output.color
     #col = cell_output.color
-    circle = toolbox_schematic.Circle()
-    circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
-    circle.set_points((y, x), rad)
-    circle.draw(axis)
+    if (y_limits != None) and (y - rad < y_limits[0]):
+        segment = toolbox_schematic.CircleSegment()
+        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        angle = pi - numpy.arccos((y - y_limits[0])/rad)
+        segment.set_points((y, x), rad, [angle, -angle])
+        segment.draw(axis)
+        segment.set_points((y - y_limits[0] + y_limits[1], x), rad, [angle, 2*pi-angle])
+        segment.draw(axis)
+    elif (y_limits != None) and (y + rad > y_limits[1]):
+        segment = toolbox_schematic.CircleSegment()
+        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        angle = numpy.arccos((y_limits[1] - y)/rad)
+        segment.set_points((y, x), rad, [angle, 2*pi-angle])
+        segment.draw(axis)
+        segment.set_points((y + y_limits[0] - y_limits[1], x), rad, [-angle, angle])
+        segment.draw(axis)
+    else:
+        circle = toolbox_schematic.Circle()
+        circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        circle.set_points((y, x), rad)
+        circle.draw(axis)
 
 
 
@@ -204,10 +222,11 @@ def plot_cells_2d(axis, agent_output, zorder=0):
     """
 
     """
-    for cell in agent_output.get_all_cells():
-        draw_cell_2d(axis, cell, zorder=zorder)
     width = agent_output.grid_nJ * agent_output.grid_res
     height = agent_output.grid_nI * agent_output.grid_res
+    y_lims = [0, width]
+    for cell in agent_output.get_all_cells():
+        draw_cell_2d(axis, cell, zorder=zorder, y_limits=y_lims)
     axis.set_xlim(0, width)
     axis.set_ylim(0, height)
 

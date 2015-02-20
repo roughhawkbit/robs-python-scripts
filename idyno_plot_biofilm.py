@@ -21,6 +21,8 @@ parser.add_option("-b", "--ColorBar", dest="color_bar", default=True,
                     action="store_false", help="include a colorbar")
 parser.add_option("-m", "--Movie", dest="make_movie", default=False,
                     action="store_true", help="make a movie using the images")
+parser.add_option("-z", "--ZeroColorBar", dest="zero_color", default=False,
+                    action="store_true", help="forces the lower limit of the color bar to zero")
 ''' TODO
 parser.add_option("-c", "--ColorDict", dest="color_dict", default="none",
                     help="path to file containing a color dictionary")
@@ -79,7 +81,10 @@ def plot(iter_info, min_max_concns):
 
 if options.plot_all:
     min_max_concns = sim.get_min_max_concns()
+    if options.zero_color:
+        min_max_concns[0] = 0
     for i in sim.get_iterate_numbers():
+        if i == 0: continue
         iter_info = sim.get_single_iterate(i)
         plot(iter_info, min_max_concns)
 elif options.iter_num >= 0:
@@ -88,10 +93,10 @@ elif options.iter_num >= 0:
     plot(iter_info, min_max_concns)
 
 if options.make_movie:
-    cmd = "ffmpeg -framerate 2  -i '"
+    cmd = "ffmpeg -framerate 8  -i '"
     cmd += os.path.join(os.path.abspath(sim.figures_dir), save_name)
     cmd+= "_%"+str(num_digits)+"d.png'"
-    cmd += " -pix_fmt yuv420p -r 24  "
-    cmd += os.path.join(os.path.abspath(sim.movies_dir), save_name+".mp4")
+    cmd += " -pix_fmt yuv420p -r 24  '"
+    cmd += os.path.join(os.path.abspath(sim.movies_dir), save_name+".mp4'")
     print cmd
     os.system(cmd)
