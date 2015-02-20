@@ -17,13 +17,19 @@ import numpy
 try:
     movieWriter = matplotlib.animation.writers['ffmpeg']
 except KeyError:
-    print('Could not find ffmpeg, attempting to use imageMagick instead...')
+    print('Could not find ffmpeg, attempting to use imageMagick instead.')
     try:
-        movieWriter = matplotlib.animation.writers['imageMagick']
+        movieWriter = matplotlib.animation.writers['imagemagick']
+        print('Found! But imageMagick is still problematic...')
     except KeyError:
         print('Could not find imageMagick either!')
-        print('Consider trying writers in this list:')
-        print matplotlib.animation.writers.list()
+        if matplotlib.animation.writers.list() == []:
+            print('Try installing ffmpeg, imageMagick, etc')
+        else:
+            print('Consider trying writers in this list:')
+            for item in matplotlib.animation.writers.list():
+                print('\t'+item)
+
 
 metadata = dict(title='Movie Test', artist='Matplotlib',
         comment='Movie support!')

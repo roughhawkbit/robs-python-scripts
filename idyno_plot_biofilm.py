@@ -23,12 +23,9 @@ parser.add_option("-m", "--Movie", dest="make_movie", default=False,
                     action="store_true", help="make a movie using the images")
 parser.add_option("-z", "--ZeroColorBar", dest="zero_color", default=False,
                     action="store_true", help="forces the lower limit of the color bar to zero")
-''' TODO
-parser.add_option("-c", "--ColorDict", dest="color_dict", default="none",
-                    help="path to file containing a color dictionary")
-parser.add_option("-f", "--FigureType", dest="fig_type", default="SlideFigure",
-                    )
-'''
+parser.add_option("-t", "--ThreeDim", dest="three_dim",  default=False,
+                    action="store_true", help="make 3D biofilm images")
+
 
 (options, args) = parser.parse_args()
 
@@ -37,6 +34,13 @@ sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
 save_name = 'biofilm_'+options.solute_name
 
 num_digits = len(str(sim.get_last_iterate_number()))
+
+projection = '3d' if options.three_dim else None
+
+# Possible to plot solutes in 3D? Use alpha channel?
+if options.three_dim:
+    options.solute_name = "none"
+    
 
 ''' TODO replace with a better way of coloring cells '''
 colors = [(0, 0, 1), (0, 1, 0), (1, 0, 0), (0, 1, 1), (1, 1, 0), (1, 0, 1)]
@@ -57,10 +61,16 @@ def plot(iter_info, min_max_concns):
     width = toolbox_plotting.mm2inch(nJ*res)
     height = toolbox_plotting.mm2inch(nI*res)
     figure = toolbox_plotting.SlideFigure(width=width, height=height)
-    axis = figure.add_subplot('', 111, frameon=False)
+    axis = figure.add_subplot('', 111, frameon=False, projection=projection)
     toolbox_idynomics.color_cells_by_species(iter_info.agent_output,
                                                             species_color_dict)
-    toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
+    if options.three_dim:
+        toolbox_idynomics.plot_cells_3d(axis, iter_info.agent_output)
+    else:
+        toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
+        axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
+        figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
+        figure.inset_axes()
     if not options.solute_name == "none":
         solute_output = toolbox_results.SoluteOutput(iter_info.env_output,
                                                      name=options.solute_name)
@@ -70,11 +80,6 @@ def plot(iter_info, min_max_concns):
         if options.color_bar:
             toolbox_plotting.make_colorbar(axis, cs)
     axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
-    axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
-    #lb, rt = 0.05, 0.95
-    figure.inset_axes()
-    #figure.subplots_adjust(left=lb, bottom=lb, right=rt, top=rt)
-    figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
     save_num = (num_digits - len(str(iter_info.number)))*'0' + str(iter_info.number)
     figure.save(os.path.join(sim.figures_dir, '%s_%s.png'%(save_name, save_num)))
 

@@ -231,6 +231,41 @@ def plot_cells_2d(axis, agent_output, zorder=0):
     axis.set_ylim(0, height)
 
 
+
+def draw_cell_3d(axis, cell_output, total_radius=False, zorder=0, y_limits=None):
+    """
+
+    """
+    (x, y, z) = cell_output.get_location()
+    rad = cell_output.get_radius(total_radius=total_radius)
+    if cell_output.color == None:
+        print 'Cell has no defined color!'
+        col = (0, 1, 0)
+    else:
+        col = cell_output.color
+    #col = (0, 1, 0) if cell_output.color == None else cell_output.color
+    #col = cell_output.color
+    sphere = toolbox_schematic.Sphere()
+    sphere.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+    sphere.set_points((y, x), rad)
+    sphere.draw(axis)
+
+
+
+def plot_cells_3d(axis, agent_output, zorder=0):
+    """
+
+    """
+    width = agent_output.grid_nJ * agent_output.grid_res
+    height = agent_output.grid_nI * agent_output.grid_res
+    depth = agent_output.grid_nK * agent_output.grid_res
+    for cell in agent_output.get_all_cells():
+        draw_cell_3d(axis, cell, zorder=zorder)
+    axis.set_xlim(0, width)
+    axis.set_ylim(0, height)
+    axis.set_zlim(0, depth)
+
+
 def color_cells_by_species(agent_output, species_color_dict):
     """
 

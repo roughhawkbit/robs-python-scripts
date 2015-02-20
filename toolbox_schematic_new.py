@@ -309,3 +309,47 @@ class Lemniscate(Shape):
             self.y1_vals.append(center[1] + (0.5*height*sin*cos/(1+sin**2)))
             self.y2_vals.append(center[1] - (0.5*height*sin*cos/(1+sin**2)))
 '''
+
+
+
+class Shape3D:
+    def __init__(self):
+        self.edgecolor  = 'k'
+        self.facecolor  = 'none'
+        self.linestyle  = '-'
+        self.linewidth  = 1
+        self.zorder     = 0
+    def set_defaults(self, edgecolor=None, facecolor=None, linestyle=None,
+                linewidth=None, transform=None, y2xscale=None, zorder=None):
+        if not (edgecolor  == None): self.edgecolor  = edgecolor
+        if not (facecolor  == None): self.facecolor  = facecolor
+        if not (linewidth  == None): self.linewidth  = linewidth
+        if not (linestyle  == None): self.linestyle  = linestyle
+        if not (zorder     == None): self.zorder     = zorder
+    def set_points(self):
+        self.x_vals, self.y_vals, self.z_vals = [], [], []
+    def draw(self, axis, edgecolor=None, facecolor=None, linestyle=None,
+                                    transform=None, linewidth=None, zorder=None):
+        #linestyle = self.linestyle if (linestyle == None) else linestyle
+        linewidth = self.linewidth if (linewidth == None) else linewidth
+        transform = self.transform if (transform == None) else transform
+        facecolor = self.facecolor if (facecolor == None) else facecolor
+        edgecolor = self.edgecolor if (edgecolor == None) else edgecolor
+        zorder    = self.zorder    if (zorder    == None) else zorder
+        axis.plot_surface(self.x_vals, self.y_vals, self.z_vals,
+                          rstride=1, cstride=1, color=facecolor,
+                          edgecolor=edgecolor, zorder=zorder,
+                          linewidth=linewidth)
+
+
+class Sphere(Shape3D):
+    def __init__(self):
+        Shape3D.__init__(self)
+    def set_points(self, center_pos, radius):
+        u, v = numpy.mgrid[0:2*numpy.pi:40j, 0:numpy.pi:20j]
+        self.x_vals = center_pos[0] + radius*numpy.cos(u)*numpy.sin(v)
+        self.y_vals = center_pos[1] + radius*numpy.sin(u)*numpy.sin(v)
+        self.z_vals = center_pos[2] + radius*numpy.cos(v)
+        
+        
+        
