@@ -148,6 +148,18 @@ def is_enclosed_dict(super_dict, sub_dict):
     return True
 
 
+def is_in_range(value, range_values, incl_endpoints=True):
+    if not (len(range_values) == 2 and range_values[0] < range_values[1]):
+        print('toolbox_basic.is_in_range():')
+        print('Range must be defined by two subsequent values!')
+        print(range_values)
+        return
+    if incl_endpoints:
+        return (value >= range_values[0]) and (value <= range_values[1])
+    else:
+        return (value > range_values[0]) and (value < range_values[1])
+
+
 def load_array(path):
     #path = check_path(path)
     if path[-4:] == '.npy':

@@ -6,8 +6,9 @@ import os
 import sys
 import toolbox_basic
 import toolbox_results
-import toolbox_schematic
+import toolbox_schematic_new as toolbox_schematic
 
+pi = numpy.pi
 
 class SimulationDirectory:
     def __init__(self, path):
@@ -51,6 +52,9 @@ class SimulationDirectory:
         self.figures_dir = os.path.join(self.path, 'figures')
         if not os.path.isdir(self.figures_dir):
             toolbox_basic.make_dir(self.figures_dir)
+        self.movies_dir = os.path.join(self.path, 'movies')
+        if not os.path.isdir(self.movies_dir):
+            toolbox_basic.make_dir(self.movies_dir)
 
 
     def get_iterate_numbers(self):
@@ -70,11 +74,17 @@ class SimulationDirectory:
         Tries to read in all of the iterates for this simulation. Can be
         time-consuming for large or long simulations.
         """
-        if self.iterate_information == []:
-            for i in self.get_iterate_numbers():
-                self.iterate_information.append(IterateInformation(self, i))
+        #if self.iterate_information == []:
+        for i in self.get_iterate_numbers():
+            self.iterate_information.append(IterateInformation(self, i))
         return self.iterate_information
-
+    
+    def get_last_iterate_number(self):
+        """
+        
+        """
+        return max(self.get_iterate_numbers())
+    
     def get_single_iterate(self, number):
         """
         Tries to get information for a single iteration, first by checking the
@@ -91,9 +101,9 @@ class SimulationDirectory:
         """
 
         """
-        for solute_name in self.get_solute_names():
-            self.min_max_concns[solute_name] = [sys.float_info.max, 0.0]
-        if self.min_max_concns == {}:
+        if self.min_max_concns == {}:        
+            for solute_name in self.get_solute_names():
+                self.min_max_concns[solute_name] = [sys.float_info.max, 0.0]
             for i in self.get_iterate_information():
                 iter_min_max = i.get_min_max_concns()
                 for solute_name in self.min_max_concns.keys():
@@ -171,7 +181,7 @@ class IterateInformation:
 
 
 
-def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0):
+def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0, y_limits=None):
     """
 
     """
@@ -184,10 +194,27 @@ def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0):
         col = cell_output.color
     #col = (0, 1, 0) if cell_output.color == None else cell_output.color
     #col = cell_output.color
-    circle = toolbox_schematic.Circle()
-    circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
-    circle.set_points((y, x), rad)
-    circle.draw(axis)
+    if (y_limits != None) and (y - rad < y_limits[0]):
+        segment = toolbox_schematic.CircleSegment()
+        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        angle = pi - numpy.arccos((y - y_limits[0])/rad)
+        segment.set_points((y, x), rad, [angle, -angle])
+        segment.draw(axis)
+        segment.set_points((y - y_limits[0] + y_limits[1], x), rad, [angle, 2*pi-angle])
+        segment.draw(axis)
+    elif (y_limits != None) and (y + rad > y_limits[1]):
+        segment = toolbox_schematic.CircleSegment()
+        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        angle = numpy.arccos((y_limits[1] - y)/rad)
+        segment.set_points((y, x), rad, [angle, 2*pi-angle])
+        segment.draw(axis)
+        segment.set_points((y + y_limits[0] - y_limits[1], x), rad, [-angle, angle])
+        segment.draw(axis)
+    else:
+        circle = toolbox_schematic.Circle()
+        circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        circle.set_points((y, x), rad)
+        circle.draw(axis)
 
 
 
@@ -195,12 +222,48 @@ def plot_cells_2d(axis, agent_output, zorder=0):
     """
 
     """
-    for cell in agent_output.get_all_cells():
-        draw_cell_2d(axis, cell, zorder=zorder)
     width = agent_output.grid_nJ * agent_output.grid_res
     height = agent_output.grid_nI * agent_output.grid_res
+    y_lims = [0, width]
+    for cell in agent_output.get_all_cells():
+        draw_cell_2d(axis, cell, zorder=zorder, y_limits=y_lims)
     axis.set_xlim(0, width)
     axis.set_ylim(0, height)
+
+
+
+def draw_cell_3d(axis, cell_output, total_radius=False, zorder=0, y_limits=None):
+    """
+
+    """
+    (x, y, z) = cell_output.get_location()
+    rad = cell_output.get_radius(total_radius=total_radius)
+    if cell_output.color == None:
+        print 'Cell has no defined color!'
+        col = (0, 1, 0)
+    else:
+        col = cell_output.color
+    #col = (0, 1, 0) if cell_output.color == None else cell_output.color
+    #col = cell_output.color
+    sphere = toolbox_schematic.Sphere()
+    sphere.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+    sphere.set_points((y, x), rad)
+    sphere.draw(axis)
+
+
+
+def plot_cells_3d(axis, agent_output, zorder=0):
+    """
+
+    """
+    width = agent_output.grid_nJ * agent_output.grid_res
+    height = agent_output.grid_nI * agent_output.grid_res
+    depth = agent_output.grid_nK * agent_output.grid_res
+    for cell in agent_output.get_all_cells():
+        draw_cell_3d(axis, cell, zorder=zorder)
+    axis.set_xlim(0, width)
+    axis.set_ylim(0, height)
+    axis.set_zlim(0, depth)
 
 
 def color_cells_by_species(agent_output, species_color_dict):

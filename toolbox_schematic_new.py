@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import with_statement
 import math
 import numpy
+import matplotlib
 
 pi = math.pi
 
@@ -79,29 +80,30 @@ class Shape:
         if not (y2xscale   == None): self.y2xscale   = y2xscale
         if not (zorder     == None): self.zorder     = zorder
     def set_points(self):
-        self.x_vals, self.y1_vals, self.y2_vals = [], [], []
+        self.vals = []
     def draw(self, axis, edgecolor=None, facecolor=None, linestyle=None,
                                     transform=None, linewidth=None, zorder=None):
-        linestyle = self.linestyle if (linestyle == None) else linestyle
+        #linestyle = self.linestyle if (linestyle == None) else linestyle
         linewidth = self.linewidth if (linewidth == None) else linewidth
         transform = self.transform if (transform == None) else transform
         facecolor = self.facecolor if (facecolor == None) else facecolor
         edgecolor = self.edgecolor if (edgecolor == None) else edgecolor
         zorder    = self.zorder    if (zorder    == None) else zorder
         if transform:
-            axis.fill_between(self.x_vals, self.y1_vals, y2=self.y2_vals,
-                    facecolor=facecolor, edgecolor=edgecolor, zorder=zorder,
-                    linewidth=linewidth, interpolate=True, linestyle=linestyle,
-                                                    transform=axis.transAxes)
+            axis.add_patch(matplotlib.patches.Polygon(self.vals, closed=True,
+                            facecolor=facecolor, edgecolor=edgecolor,
+                            zorder=zorder, 
+                            linewidth=linewidth, transform=axis.transAxes))
         else:
-            axis.fill_between(self.x_vals, self.y1_vals, y2=self.y2_vals,
-                    facecolor=facecolor, edgecolor=edgecolor, zorder=zorder,
-                    linewidth=linewidth, interpolate=True, linestyle=linestyle)
+            axis.add_patch(matplotlib.patches.Polygon(self.vals, closed=True,
+                            facecolor=facecolor, edgecolor=edgecolor,
+                            zorder=zorder, 
+                            linewidth=linewidth))
 
 
-class Circle(Shape):
+class CircleSegment(Shape):
     def __init__(self):
-        Shape.__init__()
+        Shape.__init__(self)
         self.npoints = 100
     
     def set_defaults(self, edgecolor=None, facecolor=None, linestyle=None,
@@ -116,12 +118,22 @@ class Circle(Shape):
         if not (npoints == None):
             self.npoints = npoints
     
+    def set_points(self, focus_pos, radius, angles):
+        Shape.set_points(self)
+        if not len(angles) == 2:
+            print('CircleSegment must be given two angles! '+str(angles))
+            return
+        for angle in numpy.linspace(angles[0], angles[1], self.npoints):
+            x = focus_pos[0] + radius*math.cos(angle)
+            y = focus_pos[1] + self.y2xscale * radius * math.sin(angle)
+            self.vals.append((x, y))
+
+
+class Circle(CircleSegment):
+    def __init__(self):
+        CircleSegment.__init__(self)
     def set_points(self, focus_pos, radius):
-        for angle in numpy.linspace(pi, 0, self.npoints):
-                self.x_vals.append(focus_pos[0] + radius*math.cos(angle))
-                y_diff = self.calc_ydiff(radius, angle)
-                self.y1_vals.append(focus_pos[1] + y_diff)
-                self.y2_vals.append(focus_pos[1] - y_diff)
+        CircleSegment.set_points(self, focus_pos, radius, [-pi, pi])
 
 
 class Rectangle(Shape):
@@ -129,11 +141,12 @@ class Rectangle(Shape):
         Shape.__init__(self)
     def set_points(self, sw_corner, ne_corner):
         Shape.set_points(self)
-        self.x_vals = [sw_corner[0], ne_corner[0]]
-        self.y1_vals = [sw_corner[1]]*2
-        self.y2_vals = [ne_corner[1]]*2
+        self.vals.append((sw_corner[0], sw_corner[1]),
+                         (ne_corner[0], sw_corner[1]),
+                         (ne_corner[0], ne_corner[1]),
+                         (sw_corner[0], ne_corner[1]))
 
-
+'''
 class Cell(Shape):
     def __init__(self):
         Shape.__init__(self)
@@ -295,3 +308,48 @@ class Lemniscate(Shape):
             self.x_vals.append(center[0] + (0.5*width*cos/(1+sin**2)))
             self.y1_vals.append(center[1] + (0.5*height*sin*cos/(1+sin**2)))
             self.y2_vals.append(center[1] - (0.5*height*sin*cos/(1+sin**2)))
+'''
+
+
+
+class Shape3D:
+    def __init__(self):
+        self.edgecolor  = 'k'
+        self.facecolor  = 'none'
+        self.linestyle  = '-'
+        self.linewidth  = 1
+        self.zorder     = 0
+    def set_defaults(self, edgecolor=None, facecolor=None, linestyle=None,
+                linewidth=None, transform=None, y2xscale=None, zorder=None):
+        if not (edgecolor  == None): self.edgecolor  = edgecolor
+        if not (facecolor  == None): self.facecolor  = facecolor
+        if not (linewidth  == None): self.linewidth  = linewidth
+        if not (linestyle  == None): self.linestyle  = linestyle
+        if not (zorder     == None): self.zorder     = zorder
+    def set_points(self):
+        self.x_vals, self.y_vals, self.z_vals = [], [], []
+    def draw(self, axis, edgecolor=None, facecolor=None, linestyle=None,
+                                    transform=None, linewidth=None, zorder=None):
+        #linestyle = self.linestyle if (linestyle == None) else linestyle
+        linewidth = self.linewidth if (linewidth == None) else linewidth
+        transform = self.transform if (transform == None) else transform
+        facecolor = self.facecolor if (facecolor == None) else facecolor
+        edgecolor = self.edgecolor if (edgecolor == None) else edgecolor
+        zorder    = self.zorder    if (zorder    == None) else zorder
+        axis.plot_surface(self.x_vals, self.y_vals, self.z_vals,
+                          rstride=1, cstride=1, color=facecolor,
+                          edgecolor=edgecolor, zorder=zorder,
+                          linewidth=linewidth)
+
+
+class Sphere(Shape3D):
+    def __init__(self):
+        Shape3D.__init__(self)
+    def set_points(self, center_pos, radius):
+        u, v = numpy.mgrid[0:2*numpy.pi:40j, 0:numpy.pi:20j]
+        self.x_vals = center_pos[0] + radius*numpy.cos(u)*numpy.sin(v)
+        self.y_vals = center_pos[1] + radius*numpy.sin(u)*numpy.sin(v)
+        self.z_vals = center_pos[2] + radius*numpy.cos(v)
+        
+        
+        
