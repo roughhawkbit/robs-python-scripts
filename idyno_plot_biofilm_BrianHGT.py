@@ -1,13 +1,10 @@
 #!/usr/bin/python
 from __future__ import division
 from __future__ import with_statement
-import numpy
 import os
 from optparse import OptionParser
-import toolbox_basic
 import toolbox_idynomics
 import toolbox_plotting
-import toolbox_results
 
 
 parser = OptionParser()
@@ -51,21 +48,21 @@ def plot(iter_info):
     num_donors = 0
     for cell in iter_info.agent_output.get_all_cells():
         if cell.species == 'EPS':
-            continue
-            #cell.color = 'k'
-            #num_capsules += 1
+            #continue
+            cell.color = '0.5'
+            num_capsules += 1
         elif cell.species == 'Donor':
-            cell.color = 'b'
+            cell.color = 'r'
             num_donors += 1
         elif cell.species == 'Recipient':
             if int(cell.vars['copyNumber']) > 0:
                 cell.color = 'g'
                 num_transconjugants += 1
             else:
-                cell.color = 'r'
+                cell.color = 'b'
                 num_recipients += 1
-        toolbox_idynomics.draw_cell_2d(axis, cell)
-    #print('%d capsules'%(num_capsules))
+        toolbox_idynomics.draw_cell_2d(axis, cell, total_radius=True)
+    print('%d capsules'%(num_capsules))
     print('%d donors'%(num_donors))
     print('%d transconjugants'%(num_transconjugants))
     print('%d recipients'%(num_recipients))
