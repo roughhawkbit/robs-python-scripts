@@ -259,12 +259,14 @@ class EnvOutput(Output):
             self.thickness_stddev = float(thickness.find('stddev').text)
             self.thickness_max    = float(thickness.find('max').text)
         self.solutes = self.findall('./simulation/solute')
+
     def get_solute(self, solute_name):
         for solute in self.solutes:
             if solute.attrib['name'] == solute_name:
                 return solute
         toolbox_basic.error_message('Could not find solute '+solute_name,
                             'in '+self.path)
+
     def get_solute_names(self):
         names = []
         for solute in self.solutes:
@@ -286,6 +288,9 @@ class SoluteOutput:
                                                             env_output.path)
         self.env_output = env_output
         solute = env_output.find(search_pattern)
+        if solute == None:
+            toolbox_basic.error_message('Trouble finding solute from name:',
+                                                            search_pattern)
         self.name = solute.attrib['name']
         self.unit = solute.attrib['unit']
         self.grid_res = float(solute.attrib['resolution'])

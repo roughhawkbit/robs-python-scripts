@@ -61,7 +61,7 @@ class JournalFigure:
         image = Image.open(datafile)
         axis.set_ylim(0,image.size[0])
         axis.set_ylim(image.size[1],0)
-        im = imshow(image)
+        return imshow(image)
     def process_subplots(self):
         pass
     def subplots_adjust(self, left=None, right=None, top=None, bottom=None,

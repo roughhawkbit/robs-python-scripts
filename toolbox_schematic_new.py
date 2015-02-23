@@ -332,7 +332,6 @@ class Shape3D:
                                     transform=None, linewidth=None, zorder=None):
         #linestyle = self.linestyle if (linestyle == None) else linestyle
         linewidth = self.linewidth if (linewidth == None) else linewidth
-        transform = self.transform if (transform == None) else transform
         facecolor = self.facecolor if (facecolor == None) else facecolor
         edgecolor = self.edgecolor if (edgecolor == None) else edgecolor
         zorder    = self.zorder    if (zorder    == None) else zorder
@@ -351,5 +350,13 @@ class Sphere(Shape3D):
         self.y_vals = center_pos[1] + radius*numpy.sin(u)*numpy.sin(v)
         self.z_vals = center_pos[2] + radius*numpy.cos(v)
         
-        
-        
+
+class Box(Shape3D):
+    def __init__(self):
+        Shape3D.__init__(self)
+    def set_points(self, x_range, y_range, z_range):
+        [x0, x1] = x_range
+        [y0, y1] = y_range
+        [z0, z1] = z_range
+        self.x_vals, self.y_vals, self.z_vals = \
+            numpy.mgrid[x0:x1:(x1-x0), y0:y1:(y1-y0), z0:z1:(z1-z0)]

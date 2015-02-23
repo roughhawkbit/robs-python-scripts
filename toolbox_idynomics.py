@@ -136,12 +136,18 @@ class SimulationDirectory:
 
     def find_domain_dimensions(self):
         """
-
+        TODO Do this via the protocol file.
         """
+        env0 = self.get_single_iterate(0).env_output
+        name = env0.get_solute_names()[0]
+        sol0 = toolbox_results.SoluteOutput(env0, name)
+        return sol0.grid_nI, sol0.grid_nJ, sol0.grid_nK, sol0.grid_res
+        '''
         try:
             pfxt = self.protocol_file_xml_tree
         except Error:
             self.find_protocol_xml_tree()
+        '''
 
     def clean_up(self):
         """
@@ -223,12 +229,10 @@ def plot_cells_2d(axis, agent_output, zorder=0):
 
     """
     width = agent_output.grid_nJ * agent_output.grid_res
-    height = agent_output.grid_nI * agent_output.grid_res
     y_lims = [0, width]
     for cell in agent_output.get_all_cells():
         draw_cell_2d(axis, cell, zorder=zorder, y_limits=y_lims)
-    axis.set_xlim(0, width)
-    axis.set_ylim(0, height)
+
 
 
 
@@ -247,7 +251,7 @@ def draw_cell_3d(axis, cell_output, total_radius=False, zorder=0, y_limits=None)
     #col = cell_output.color
     sphere = toolbox_schematic.Sphere()
     sphere.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
-    sphere.set_points((y, x), rad)
+    sphere.set_points((y, z, x+4), rad)
     sphere.draw(axis)
 
 
@@ -256,14 +260,43 @@ def plot_cells_3d(axis, agent_output, zorder=0):
     """
 
     """
-    width = agent_output.grid_nJ * agent_output.grid_res
-    height = agent_output.grid_nI * agent_output.grid_res
-    depth = agent_output.grid_nK * agent_output.grid_res
+    res = agent_output.grid_res
+    width = agent_output.grid_nJ * res
+    height = agent_output.grid_nI * res
+    depth = agent_output.grid_nK * res
+    #X, Y = numpy.meshgrid([0, width], [0, depth])
+    #axis.plot_surface(X, Y, 0, color='k', zorder=-10)
+    #axis.plot_surface(X, Y, -res, color='k', zorder=-10)
+    #X, Z = numpy.meshgrid([0, width], [0, -res])
+    #axis.plot_surface(X, 0, Z, color='k', zorder=-10)
+    #axis.plot_surface(X, depth, Z, color='k', zorder=-10)
+    #Y, Z = numpy.meshgrid([0, depth], [0, -res])
+    #axis.plot_surface(0, Y, Z, color='k', zorder=-10)
+    #axis.plot_surface(width, Y, Z, color='k', zorder=-10)
     for cell in agent_output.get_all_cells():
         draw_cell_3d(axis, cell, zorder=zorder)
     axis.set_xlim(0, width)
-    axis.set_ylim(0, height)
-    axis.set_zlim(0, depth)
+    axis.set_ylim(0, depth)
+    axis.set_zlim(0, height)
+
+
+def get_default_species_colors(sim):
+    colors = ['red', 'blue', 'green', 'cyan', 'yellow', 'purple', 'brown']
+    out = {}
+    for species_name in sim.get_species_names():
+        if len(colors) == 0:
+            print "Not enough default colors for so many species!"
+            return out
+        out[species_name] = colors.pop(0)
+    return out
+
+
+def save_color_dict(color_dict, dir_path):
+    script = 'Item\t\tColor\n'
+    for key, value in color_dict.iteritems():
+        script += str(key)+'\t\t'+str(value)
+    with open(os.path.join(dir_path, 'color_info.txt'), 'w') as f:
+        f.write(script)
 
 
 def color_cells_by_species(agent_output, species_color_dict):
@@ -292,4 +325,23 @@ def solute_contour(axis, solute_output, interpolation='nearest', zorder=-10,
     cs = axis.imshow(array,
             interpolation=interpolation, origin='lower', cmap=cmap,
             extent=extent, zorder=zorder, vmin=concn_range[0], vmax=concn_range[1])
+    return cs
+
+
+def solute_contour_3d(axis, solute_output, interpolation='nearest', zorder=-10,
+                    cmap='gray', concn_range=[None]*2, array_multiplier=1):
+    """
+
+    """
+    res = solute_output.grid_res
+    Y, Z = numpy.meshgrid( \
+                numpy.arange(0, res*(solute_output.grid_nK), res),
+                numpy.arange(0, res*(solute_output.grid_nI), res))
+    array = solute_output.concentration_array()
+    # The array will be in 3D
+    if not array_multiplier == 1:
+        array = numpy.multiply(array, array_multiplier)
+    cs = axis.contourf(Y, Z, array[:, :, 0], zdir='x', 
+            cmap=cmap, zorder=zorder, offset=-solute_output.grid_nJ*res,
+            levels=numpy.linspace(concn_range[0],concn_range[1],1200))
     return cs
