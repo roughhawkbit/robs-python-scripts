@@ -10,8 +10,8 @@ import toolbox_results
 
 
 parser = OptionParser()
-parser.add_option("-r", "--ResultsDir", dest="results_dir", default=os.getcwd(),
-                                      help="path to results directory")
+parser.add_option("-r", "--ResultsDir", dest="results_dir",
+                  default=os.getcwd(), help="path to results directory")
 parser.add_option("-i", "--IterateNum", dest="iter_num", default=-1,
                     type="int", help="number of the iterate to be plotted")
 parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",

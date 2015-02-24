@@ -10,7 +10,7 @@ import toolbox_results
 
 parser = OptionParser()
 parser.add_option("-a", "--PlotAll", dest="plot_all", default=False,
-                    action="store_true", help="plot all iterates, ignoring -i")
+                  action="store_true", help="plot all iterates, ignoring -i")
 parser.add_option("-b", "--ColorBar", dest="color_bar", default=False,
                             action="store_true", help="include a colorbar")
 parser.add_option("-f", "--FrameOn", dest="frameon", default=False,
@@ -74,47 +74,36 @@ else:
 
 
 def plot(iter_info, min_max_concns):
-    axis = figure.add_subplot('', 111, frameon=options.frameon, projection='3d')
-    toolbox_idynomics.color_cells_by_species(iter_info.agent_output,
-                                                            species_color_dict)
-    if options.three_dim:
-        toolbox_idynomics.plot_cells_3d(axis, iter_info.agent_output)
-    else:
-        toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
-        axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
-        figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
-        figure.inset_axes()
+    axis = figure.add_subplot('', 111,
+                                     frameon=options.frameon, projection='3d')
+    toolbox_idynomics.color_cells_by_species(
+                                   iter_info.agent_output, species_color_dict)
+    toolbox_idynomics.plot_cells_3d(axis, iter_info.agent_output)
     if not options.solute_name == "none":
-        solute_output = toolbox_results.SoluteOutput(iter_info.env_output,
-                                                     name=options.solute_name)
+        solute_output = toolbox_results.SoluteOutput(
+                               iter_info.env_output, name=options.solute_name)
         cs = toolbox_idynomics.solute_contour(axis, solute_output,
-                            concn_range=min_max_concns[options.solute_name],
+                        concn_range=min_max_concns[options.solute_name],
                                                     interpolation='bicubic')
         if options.color_bar:
             toolbox_plotting.make_colorbar(axis, cs)
-    axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
-    save_num = (num_digits - len(str(iter_info.number)))*'0' + str(iter_info.number)
-    figure.save(os.path.join(sim.figures_dir, '%s_%s.png'%(save_name, save_num)))
+    if options.titleon:
+        axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
+    save_num = str(iter_info.number)
+    save_num = (num_digits - len(save_num))*'0' + save_num
+    figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
 
+min_max_concns = sim.get_min_max_concns()
+if options.zero_color:
+    min_max_concns[0] = 0
 
 if options.plot_all:
-    min_max_concns = sim.get_min_max_concns()
-    if options.zero_color:
-        min_max_concns[0] = 0
     for i in sim.get_iterate_numbers():
         if i == 0: continue
         iter_info = sim.get_single_iterate(i)
         plot(iter_info, min_max_concns)
-elif options.iter_num >= 0:
+else:
     iter_info = sim.get_single_iterate(options.iter_num)
-    min_max_concns = iter_info.get_min_max_concns()
     plot(iter_info, min_max_concns)
 
-if options.make_movie:
-    cmd = "ffmpeg -framerate 8  -i '"
-    cmd += os.path.join(os.path.abspath(sim.figures_dir), save_name)
-    cmd+= "_%"+str(num_digits)+"d.png'"
-    cmd += " -pix_fmt yuv420p -r 24  '"
-    cmd += os.path.join(os.path.abspath(sim.movies_dir), save_name+".mp4'")
-    print cmd
-    os.system(cmd)
+

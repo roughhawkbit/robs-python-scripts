@@ -10,7 +10,7 @@ import toolbox_results
 
 parser = OptionParser()
 parser.add_option("-a", "--PlotAll", dest="plot_all", default=False,
-                    action="store_true", help="plot all iterates, ignoring -i")
+                  action="store_true", help="plot all iterates, ignoring -i")
 parser.add_option("-b", "--ColorBar", dest="color_bar", default=False,
                             action="store_true", help="include a colorbar")
 parser.add_option("-f", "--FrameOn", dest="frameon", default=False,
@@ -92,8 +92,9 @@ def plot(iter_info, min_max_concns):
         axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
     axis.set_xlim(0, nJ * res)
     axis.set_ylim(-res, nI * res)
-    save_num = (num_digits - len(str(iter_info.number)))*'0' + str(iter_info.number)
-    figure.save(os.path.join(sim.figures_dir, '%s_%s.png'%(save_name, save_num)))
+    save_num = str(iter_info.number)
+    save_num = (num_digits - len(save_num))*'0' + save_num
+    figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
 
 
 if options.plot_all:
@@ -104,7 +105,7 @@ if options.plot_all:
         if i == 0: continue
         iter_info = sim.get_single_iterate(i)
         plot(iter_info, min_max_concns)
-elif options.iter_num >= 0:
+else:
     iter_info = sim.get_single_iterate(options.iter_num)
     min_max_concns = iter_info.get_min_max_concns()
     if options.zero_color:

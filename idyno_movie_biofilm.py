@@ -1,51 +1,32 @@
 #!/usr/bin/python
 from __future__ import division
 from __future__ import with_statement
-# This script is adapted from moviewriter.py example given at
-# http://matplotlib.org/examples/animation/moviewriter.html
-
-# Need to do this first so that we have the correct back end
-import matplotlib
-matplotlib.use("Agg")
-# Now import the matplotlib packages we need
-import matplotlib.pyplot
-import matplotlib.animation
-# Finally, everything else
-import numpy
+import os
+from optparse import OptionParser
+import toolbox_idynomics
 
 
-try:
-    movieWriter = matplotlib.animation.writers['ffmpeg']
-except KeyError:
-    print('Could not find ffmpeg, attempting to use imageMagick instead.')
-    try:
-        movieWriter = matplotlib.animation.writers['imagemagick']
-        print('Found! But imageMagick is still problematic...')
-    except KeyError:
-        print('Could not find imageMagick either!')
-        if matplotlib.animation.writers.list() == []:
-            print('Try installing ffmpeg, imageMagick, etc')
-        else:
-            print('Consider trying writers in this list:')
-            for item in matplotlib.animation.writers.list():
-                print('\t'+item)
 
 
-metadata = dict(title='Movie Test', artist='Matplotlib',
-        comment='Movie support!')
-writer = movieWriter(fps=15, metadata=metadata)
+parser = OptionParser()
+parser.add_option("-f", "--FrameRate", dest="frame_rate", default=24,
+                        type="int", help="number of images per second")
+parser.add_option("-r", "--ResultsDir", dest="results_dir",
+                      default=os.getcwd(), help="path to results directory")
+parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",
+                        help="name of the solute to be plotted behind cells")
+(options, args) = parser.parse_args()
 
-fig = matplotlib.pyplot.figure()
-l, = matplotlib.pyplot.plot([], [], 'k-o')
+sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
 
-matplotlib.pyplot.xlim(-5, 5)
-matplotlib.pyplot.ylim(-5, 5)
+num_digits = len(str(sim.get_last_iterate_number()))
 
-x0,y0 = 0, 0
+save_name = 'biofilm_'+options.solute_name
 
-with writer.saving(fig, "writer_test.mp4", 100):
-    for i in range(100):
-        x0 += 0.1 * numpy.random.randn()
-        y0 += 0.1 * numpy.random.randn()
-        l.set_data(x0, y0)
-        writer.grab_frame()
+cmd = "ffmpeg -framerate "+str(options.frame_rate)+"  -i '"
+cmd += os.path.join(os.path.abspath(sim.figures_dir), save_name)
+cmd += "_%"+str(num_digits)+"d.png'"
+cmd += " -pix_fmt yuv420p -r 24  '"
+cmd += os.path.join(os.path.abspath(sim.movies_dir), save_name+".mp4'")
+print cmd
+os.system(cmd)
