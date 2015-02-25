@@ -27,7 +27,9 @@ parser.add_option("-r", "--ResultsDir", dest="results_dir",
                       default=os.getcwd(), help="path to results directory")
 parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",
                         help="name of the solute to be plotted behind cells")
-parser.add_option("-t", "--TitleOn", dest="titleon", default=False,
+parser.add_option("-t", "--TimeOn", dest="timeon", default=False,
+                        action="store_true", help="record the time in figures")
+parser.add_option("-T", "--TitleOn", dest="titleon", default=False,
                         action="store_true", help="turn the figure title on")
 parser.add_option("-W", "--Width", dest="width", default=0,
                     type="int", help="figure width in inches")
@@ -41,7 +43,7 @@ sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
 
 save_name = 'biofilm_'+options.solute_name
 
-num_digits = len(str(sim.get_last_iterate_number()))
+num_digits = len(str(len(sim.get_iterate_numbers())))
     
 color_dict_path = os.path.join(sim.figures_dir, 'color_info.txt')
 if os.path.isfile(color_dict_path):
@@ -53,6 +55,8 @@ else:
 nI, nJ, nK, res = sim.find_domain_dimensions()
 if options.i_max > 0:
     nI = options.i_max
+
+counter = 0
 
 if options.figure_type == None:
     if options.height > 0: height = options.height
@@ -97,9 +101,14 @@ def plot(iter_info, min_max_concns):
     if options.frameon:
         axis.set_xlabel('x')
         axis.set_ylabel('y')
+    if options.timeon:
+        axis.text(0.0, nI*res, 'Time: %d h'%(int(iter_info.time)),
+                  va='top', ha='left')
     axis.set_xlim(0, nJ * res)
     axis.set_ylim(-res, nI * res)
-    save_num = str(iter_info.number)
+    #save_num = str(iter_info.number)
+    save_num = str(counter)
+    counter += 1
     save_num = (num_digits - len(save_num))*'0' + save_num
     figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
 

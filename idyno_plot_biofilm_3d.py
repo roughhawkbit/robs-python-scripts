@@ -28,6 +28,7 @@ parser.add_option("-r", "--ResultsDir", dest="results_dir",
                       default=os.getcwd(), help="path to results directory")
 parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",
                         help="name of the solute to be plotted behind cells")
+#parser.add_option("-S", "--AllSolute", dest="all_solute")
 parser.add_option("-t", "--TitleOn", dest="titleon", default=False,
                         action="store_true", help="turn the figure title on")
 parser.add_option("-W", "--Width", dest="width", default=0,
@@ -100,6 +101,7 @@ def plot(iter_info, min_max_concns):
         axis.set_zlabel('z')
     save_num = str(iter_info.number)
     save_num = (num_digits - len(save_num))*'0' + save_num
+    figure.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.95)
     figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
 
 min_max_concns = sim.get_min_max_concns()

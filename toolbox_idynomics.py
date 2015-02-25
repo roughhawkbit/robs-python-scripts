@@ -373,10 +373,10 @@ def solute_contour_3d(axis, solute_output, zorder=-10,
                           numpy.linspace(0, res*nK, nK))
     axis.contourf(X, Y, array, zdir='z', cmap='gray', offset=0,
                                                zorder=zorder, levels=levels)
-    '''
+    
     X = [0,      0,      0,      res*nJ, res*nJ]
     Y = [res*nK, res*nK, 0,      0,      0]
     Z = [0,      res*nI, res*nI, res*nI, 0]
     axis.plot(X, Y, Z, 'k-')
-    '''
+    
     return cs
