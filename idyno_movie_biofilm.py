@@ -6,8 +6,6 @@ from optparse import OptionParser
 import toolbox_idynomics
 
 
-
-
 parser = OptionParser()
 parser.add_option("-f", "--FrameRate", dest="frame_rate", default=24,
                         type="int", help="number of images per second")

@@ -74,7 +74,7 @@ class SimulationDirectory:
         Tries to read in all of the iterates for this simulation. Can be
         time-consuming for large or long simulations.
         """
-        #if self.iterate_information == []:
+        self.iterate_information = []
         for i in self.get_iterate_numbers():
             self.iterate_information.append(IterateInformation(self, i))
         return self.iterate_information
@@ -264,17 +264,16 @@ def plot_cells_3d(axis, agent_output, zorder=0):
     width = agent_output.grid_nJ * res
     height = agent_output.grid_nI * res
     depth = agent_output.grid_nK * res
-    #X, Y = numpy.meshgrid([0, width], [0, depth])
-    #axis.plot_surface(X, Y, 0, color='k', zorder=-10)
-    #axis.plot_surface(X, Y, -res, color='k', zorder=-10)
-    #X, Z = numpy.meshgrid([0, width], [0, -res])
-    #axis.plot_surface(X, 0, Z, color='k', zorder=-10)
-    #axis.plot_surface(X, depth, Z, color='k', zorder=-10)
-    #Y, Z = numpy.meshgrid([0, depth], [0, -res])
-    #axis.plot_surface(0, Y, Z, color='k', zorder=-10)
-    #axis.plot_surface(width, Y, Z, color='k', zorder=-10)
+    num_cells = len(agent_output.get_all_cells())
+    counter = 0
     for cell in agent_output.get_all_cells():
         draw_cell_3d(axis, cell, zorder=zorder)
+        counter += 1
+        sys.stdout.write('\r')
+        i = int(20*counter/num_cells)
+        sys.stdout.write("Plotting cells [%-20s] %d%%" % ('='*i, 5*i))
+        sys.stdout.flush()
+    sys.stdout.write('\n')
     axis.set_xlim(0, width)
     axis.set_ylim(0, depth)
     axis.set_zlim(0, height)
@@ -291,12 +290,24 @@ def get_default_species_colors(sim):
     return out
 
 
-def save_color_dict(color_dict, dir_path):
+def save_color_dict(color_dict, file_path):
     script = 'Item\t\tColor\n'
     for key, value in color_dict.iteritems():
-        script += str(key)+'\t\t'+str(value)
-    with open(os.path.join(dir_path, 'color_info.txt'), 'w') as f:
+        script += str(key)+'\t\t'+str(value)+'\n'
+    with open(file_path, 'w') as f:
         f.write(script)
+
+
+def read_color_dict(file_path):
+    out = {}
+    file_path = toolbox_basic.check_path(file_path)
+    with open(file_path, 'Ur') as f:
+        for line in f.readlines()[1:]:
+            line = line.replace('\n', '')
+            vals = line.split('\t\t')
+            out[vals[0]] = vals[1]
+    return out
+        
 
 
 def color_cells_by_species(agent_output, species_color_dict):
@@ -328,20 +339,44 @@ def solute_contour(axis, solute_output, interpolation='nearest', zorder=-10,
     return cs
 
 
-def solute_contour_3d(axis, solute_output, interpolation='nearest', zorder=-10,
+def solute_contour_3d(axis, solute_output, zorder=-10,
                     cmap='gray', concn_range=[None]*2, array_multiplier=1):
     """
 
     """
-    res = solute_output.grid_res
-    Y, Z = numpy.meshgrid( \
-                numpy.arange(0, res*(solute_output.grid_nK), res),
-                numpy.arange(0, res*(solute_output.grid_nI), res))
     array = solute_output.concentration_array()
     # The array will be in 3D
     if not array_multiplier == 1:
         array = numpy.multiply(array, array_multiplier)
-    cs = axis.contourf(Y, Z, array[:, :, 0], zdir='x', 
-            cmap=cmap, zorder=zorder, offset=-solute_output.grid_nJ*res,
-            levels=numpy.linspace(concn_range[0],concn_range[1],1200))
+    
+    if not concn_range == [None]*2:
+        concn_range = [numpy.min(array), numpy.max(array)]
+    levels = numpy.linspace(concn_range[0], concn_range[1], 128)
+    
+    res = solute_output.grid_res
+    nI = solute_output.grid_nI
+    nJ = solute_output.grid_nJ
+    nK = solute_output.grid_nK
+    
+    Y, Z = numpy.meshgrid(numpy.linspace(0, res*nK, nK),
+                          numpy.linspace(0, res*nI, nI))
+    axis.contourf(array[:, :, 0], Y, Z, zdir='x', cmap=cmap, offset=0,
+                                               zorder=zorder, levels=levels)
+    
+    X, Z = numpy.meshgrid(numpy.linspace(0, res*nJ, nJ),
+                          numpy.linspace(0, res*nI, nI))
+    cs = axis.contourf(X, array[:, 0, :], Z, zdir='y', cmap=cmap, offset=0,
+                                               zorder=zorder, levels=levels)
+    # Plots a black surface at the bottom. Could be done better!
+    array = numpy.ones([nJ, nK])*concn_range[0]
+    X, Y = numpy.meshgrid(numpy.linspace(0, res*nJ, nJ),
+                          numpy.linspace(0, res*nK, nK))
+    axis.contourf(X, Y, array, zdir='z', cmap='gray', offset=0,
+                                               zorder=zorder, levels=levels)
+    '''
+    X = [0,      0,      0,      res*nJ, res*nJ]
+    Y = [res*nK, res*nK, 0,      0,      0]
+    Z = [0,      res*nI, res*nI, res*nI, 0]
+    axis.plot(X, Y, Z, 'k-')
+    '''
     return cs

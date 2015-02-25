@@ -9,7 +9,7 @@ import toolbox_results
 
 
 parser = OptionParser()
-parser.add_option("-a", "--PlotAll", dest="plot_all", default=False,
+parser.add_option("-a", "--AllIter", dest="all_iter", default=False,
                   action="store_true", help="plot all iterates, ignoring -i")
 parser.add_option("-b", "--ColorBar", dest="color_bar", default=False,
                             action="store_true", help="include a colorbar")
@@ -43,8 +43,12 @@ save_name = 'biofilm_'+options.solute_name
 
 num_digits = len(str(sim.get_last_iterate_number()))
     
-species_color_dict = toolbox_idynomics.get_default_species_colors(sim)
-toolbox_idynomics.save_color_dict(species_color_dict, sim.figures_dir)
+color_dict_path = os.path.join(sim.figures_dir, 'color_info.txt')
+if os.path.isfile(color_dict_path):
+    species_color_dict = toolbox_idynomics.read_color_dict(color_dict_path)
+else:
+    species_color_dict = toolbox_idynomics.get_default_species_colors(sim)
+    toolbox_idynomics.save_color_dict(species_color_dict, color_dict_path)
 
 nI, nJ, nK, res = sim.find_domain_dimensions()
 if options.i_max > 0:
@@ -74,7 +78,7 @@ else:
 def plot(iter_info, min_max_concns):
     axis = figure.add_subplot('', 111, frameon=options.frameon)
     toolbox_idynomics.color_cells_by_species(iter_info.agent_output,
-                                                            species_color_dict)
+                                                           species_color_dict)
     toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
     axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
     figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
@@ -90,6 +94,9 @@ def plot(iter_info, min_max_concns):
             toolbox_plotting.make_colorbar(axis, cs)
     if options.titleon:
         axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
+    if options.frameon:
+        axis.set_xlabel('x')
+        axis.set_ylabel('y')
     axis.set_xlim(0, nJ * res)
     axis.set_ylim(-res, nI * res)
     save_num = str(iter_info.number)
@@ -97,12 +104,11 @@ def plot(iter_info, min_max_concns):
     figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
 
 
-if options.plot_all:
+if options.all_iter:
     min_max_concns = sim.get_min_max_concns()
     if options.zero_color:
         min_max_concns[options.solute_name][0] = 0.0
     for i in sim.get_iterate_numbers():
-        if i == 0: continue
         iter_info = sim.get_single_iterate(i)
         plot(iter_info, min_max_concns)
 else:

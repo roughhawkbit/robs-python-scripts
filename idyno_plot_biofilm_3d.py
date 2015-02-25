@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from __future__ import division
 from __future__ import with_statement
+import matplotlib
 import os
 from optparse import OptionParser
 import toolbox_idynomics
@@ -9,7 +10,7 @@ import toolbox_results
 
 
 parser = OptionParser()
-parser.add_option("-a", "--PlotAll", dest="plot_all", default=False,
+parser.add_option("-a", "--AllIter", dest="all_iter", default=False,
                   action="store_true", help="plot all iterates, ignoring -i")
 parser.add_option("-b", "--ColorBar", dest="color_bar", default=False,
                             action="store_true", help="include a colorbar")
@@ -42,9 +43,14 @@ sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
 save_name = 'biofilm_'+options.solute_name
 
 num_digits = len(str(sim.get_last_iterate_number()))
+
+color_dict_path = os.path.join(sim.figures_dir, 'color_info.txt')
+if os.path.isfile(color_dict_path):
+    species_color_dict = toolbox_idynomics.read_color_dict(color_dict_path)
+else:
+    species_color_dict = toolbox_idynomics.get_default_species_colors(sim)
+    toolbox_idynomics.save_color_dict(species_color_dict, color_dict_path)
     
-species_color_dict = toolbox_idynomics.get_default_species_colors(sim)
-toolbox_idynomics.save_color_dict(species_color_dict, sim.figures_dir)
 
 nI, nJ, nK, res = sim.find_domain_dimensions()
 if options.i_max > 0:
@@ -55,8 +61,7 @@ if options.figure_type == None:
     else: height = toolbox_plotting.mm2inch(nI * res)
     if options.width > 0: width = options.width
     else: width = toolbox_plotting.mm2inch(nJ * res)
-    figure = toolbox_plotting.SlideFigure(width=width,
-                                          height=height, projection='3d')
+    figure = toolbox_plotting.SlideFigure(width=width, height=height)
 else:
     script = "figure = toolbox_plotting."+options.figure_type+"Figure("
     if nI > 2*nJ:
@@ -76,19 +81,23 @@ else:
 def plot(iter_info, min_max_concns):
     axis = figure.add_subplot('', 111,
                                      frameon=options.frameon, projection='3d')
-    toolbox_idynomics.color_cells_by_species(
-                                   iter_info.agent_output, species_color_dict)
-    toolbox_idynomics.plot_cells_3d(axis, iter_info.agent_output)
+    axis.view_init(azim=45, elev=35)
     if not options.solute_name == "none":
         solute_output = toolbox_results.SoluteOutput(
                                iter_info.env_output, name=options.solute_name)
-        cs = toolbox_idynomics.solute_contour(axis, solute_output,
-                        concn_range=min_max_concns[options.solute_name],
-                                                    interpolation='bicubic')
+        cs = toolbox_idynomics.solute_contour_3d(axis, solute_output,
+                        concn_range=min_max_concns[options.solute_name])
         if options.color_bar:
-            toolbox_plotting.make_colorbar(axis, cs)
+            matplotlib.pyplot.colorbar(cs)
+    toolbox_idynomics.color_cells_by_species(
+                                   iter_info.agent_output, species_color_dict)
+    toolbox_idynomics.plot_cells_3d(axis, iter_info.agent_output)
     if options.titleon:
         axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
+    if options.frameon:
+        axis.set_xlabel('x')
+        axis.set_ylabel('y')
+        axis.set_zlabel('z')
     save_num = str(iter_info.number)
     save_num = (num_digits - len(save_num))*'0' + save_num
     figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
@@ -97,9 +106,8 @@ min_max_concns = sim.get_min_max_concns()
 if options.zero_color:
     min_max_concns[0] = 0
 
-if options.plot_all:
+if options.all_iter:
     for i in sim.get_iterate_numbers():
-        if i == 0: continue
         iter_info = sim.get_single_iterate(i)
         plot(iter_info, min_max_concns)
 else:

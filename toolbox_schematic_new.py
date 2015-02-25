@@ -344,8 +344,8 @@ class Shape3D:
 class Sphere(Shape3D):
     def __init__(self):
         Shape3D.__init__(self)
-    def set_points(self, center_pos, radius):
-        u, v = numpy.mgrid[0:2*numpy.pi:40j, 0:numpy.pi:20j]
+    def set_points(self, center_pos, radius, npoints=20j):
+        u, v = numpy.mgrid[0:2*numpy.pi:2*npoints, 0:numpy.pi:npoints]
         self.x_vals = center_pos[0] + radius*numpy.cos(u)*numpy.sin(v)
         self.y_vals = center_pos[1] + radius*numpy.sin(u)*numpy.sin(v)
         self.z_vals = center_pos[2] + radius*numpy.cos(v)
