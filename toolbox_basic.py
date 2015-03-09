@@ -166,11 +166,9 @@ def load_array(path):
         return numpy.load(check_path(path))
     if path[-4:] == '.txt':
         print 'toolbox_basic.load_array() TO DO: loading .txt files! '+path
-        exit()
     if os.path.isfile(path+'.npy'):
         return numpy.load(check_path(path+'.npy'))
     print 'toolbox_basic.load_array() TO DO: loading unrecognised files! '+path
-    exit()
 
 
 def make_dir(path, logfile=None):

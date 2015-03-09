@@ -43,7 +43,7 @@ sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
 
 save_name = 'biofilm_'+options.solute_name
 
-num_digits = len(str(len(sim.get_iterate_numbers())))
+num_digits = len(str(sim.get_last_iterate_number()))
     
 color_dict_path = os.path.join(sim.figures_dir, 'color_info.txt')
 if os.path.isfile(color_dict_path):
@@ -106,9 +106,9 @@ def plot(iter_info, min_max_concns):
                   va='top', ha='left')
     axis.set_xlim(0, nJ * res)
     axis.set_ylim(-res, nI * res)
-    #save_num = str(iter_info.number)
-    save_num = str(counter)
-    counter += 1
+    save_num = str(iter_info.number)
+    #save_num = str(counter)
+    #counter += 1
     save_num = (num_digits - len(save_num))*'0' + save_num
     figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
 

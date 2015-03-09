@@ -25,9 +25,10 @@ def mm2inch(mm):
 class JournalFigure:
     def __init__(self):
         self.subplots = {}
-    def save(self, path, dpi=300):
+    def save(self, path, dpi=300, clear=True):
         print('Saving as '+path)
         matplotlib.pyplot.savefig(path, dpi=dpi)
+        matplotlib.pyplot.clf()
     def set_font_size(self, fontsize):
         matplotlib.rc('font', **{'size':fontsize})
     def bottom_axis_only(self, axis):
