@@ -28,7 +28,8 @@ class JournalFigure:
     def save(self, path, dpi=300, clear=True):
         print('Saving as '+path)
         matplotlib.pyplot.savefig(path, dpi=dpi)
-        matplotlib.pyplot.clf()
+        if clear:
+            matplotlib.pyplot.clf()
     def set_font_size(self, fontsize):
         matplotlib.rc('font', **{'size':fontsize})
     def bottom_axis_only(self, axis):

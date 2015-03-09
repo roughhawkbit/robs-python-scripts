@@ -21,7 +21,6 @@ sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
 save_name = 'biofilm_'+options.solute_name
 
 file_list = toolbox_basic.file_list(sim.figures_dir, save_name+'*.png')
-print len(file_list)
 num_digits = len(str(len(file_list)))
 
 temp_dir = os.path.join(os.path.abspath(sim.movies_dir), 'temp')
@@ -37,7 +36,6 @@ cmd = "ffmpeg -framerate "+str(options.frame_rate)+"  -i '"
 cmd += os.path.join(temp_dir, "img%"+str(num_digits)+"d.png'")
 cmd += " -pix_fmt yuv420p -r 24  '"
 cmd += os.path.join(os.path.abspath(sim.movies_dir), save_name+".mp4'")
-print cmd
 os.system(cmd)
 
 toolbox_basic.rm_dir(temp_dir)
