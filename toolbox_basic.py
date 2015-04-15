@@ -10,6 +10,8 @@ import xml.etree.ElementTree as xmlTree
 import zipfile
 
 
+pi = numpy.pi
+
 class LogFile:
     def __init__(self, save_path):
         self.text = ''
