@@ -11,14 +11,14 @@ import xml.etree.ElementTree as xmlTree
 # within as CSV.
 class ResultXMLfile:
     def __init__(self, path=None, root_name='result', read_only=False):
-        '''if path == None:
+        if path == None:
             self.path = path
             self.root = xmlTree.Element(root_name)
             self.tree = xmlTree.ElementTree(self.root)
         else:
             self.path = path
             self.tree = toolbox_basic.get_xml_tree(self.path)
-            self.root = self.tree.getroot()'''
+            self.root = self.tree.getroot()
         self.path = path
         self.tree = toolbox_basic.get_xml_tree(self.path)
         if self.tree == None:

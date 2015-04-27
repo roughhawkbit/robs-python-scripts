@@ -307,16 +307,24 @@ class SoluteOutput:
         return self.values[0]
     def concentration_array(self):
         self.array = numpy.array(self.values)
-        #print self.array.shape, self.grid_nI, self.grid_nJ
         if self.three_dim:
-            self.array = self.array.reshape((self.grid_nI, self.grid_nJ, self.grid_nK))
+            # Older versions of iDynoMiCS included padding in the env_State
+            if self.array.shape[0] == self.grid_nI*self.grid_nJ*self.grid_nK:
+                new_shape = (self.grid_nI, self.grid_nJ, self.grid_nK)
+                self.array = self.array.reshape(new_shape)
+            else:
+                new_shape = (self.grid_nI+2, self.grid_nJ+2, self.grid_nK+2)
+                self.array = self.array.reshape(new_shape)
+                self.array = self.array[1:-1, 1:-1, 1:-1]
         else:
-            self.array = self.array.reshape((self.grid_nI, self.grid_nJ)
-            '''
-            Fix for old versions of iDynoMiCS, when padding was output
-            self.array = self.array.reshape((self.grid_nI+2, self.grid_nJ+2))
-            self.array = self.array[1:-1, 1:-1]
-            '''
+            # Older versions of iDynoMiCS included padding in the env_State
+            if self.array.shape[0] == self.grid_nI*self.grid_nJ:
+                new_shape = (self.grid_nI, self.grid_nJ)
+                self.array = self.array.reshape(new_shape)
+            else:
+                new_shape = (self.grid_nI+2, self.grid_nJ+2)
+                self.array = self.array.reshape(new_shape)
+                self.array = self.array[1:-1, 1:-1]
         return self.array
 
 

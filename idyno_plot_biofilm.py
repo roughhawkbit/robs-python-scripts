@@ -88,7 +88,7 @@ def plot(iter_info, min_max_concns):
     figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
     figure.inset_axes()
     if not options.solute_name == "none":
-        print min_max_concns[options.solute_name]
+        #print min_max_concns[options.solute_name]
         solute_output = toolbox_results.SoluteOutput(iter_info.env_output,
                                                      name=options.solute_name)
         cs = toolbox_idynomics.solute_contour(axis, solute_output,
