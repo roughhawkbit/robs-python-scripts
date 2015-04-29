@@ -187,7 +187,7 @@ class IterateInformation:
 
 
 
-def draw_cell_2d(axis, cell_output, total_radius=False, zorder=0, y_limits=None):
+def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
     """
 
     """
@@ -228,6 +228,7 @@ def plot_cells_2d(axis, agent_output, zorder=0):
     """
 
     """
+    print('Plotting %d cells'%(len(agent_output.get_all_cells())))
     width = agent_output.grid_nJ * agent_output.grid_res
     y_lims = [0, width]
     for cell in agent_output.get_all_cells():
@@ -236,7 +237,7 @@ def plot_cells_2d(axis, agent_output, zorder=0):
 
 
 
-def draw_cell_3d(axis, cell_output, total_radius=False, zorder=0, y_limits=None):
+def draw_cell_3d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
     """
 
     """
@@ -315,6 +316,8 @@ def color_cells_by_species(agent_output, species_color_dict):
 
     """
     for species in agent_output.species_outputs:
+        print('Colouring %d %s cells %s'
+            %(len(species.members), species.name, species_color_dict[species.name]))
         for cell in species.members:
             cell.color = species_color_dict[species.name]
 
