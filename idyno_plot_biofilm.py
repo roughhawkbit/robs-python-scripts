@@ -31,6 +31,8 @@ parser.add_option("-r", "--ResultsDir", dest="results_dir",
                       default=os.getcwd(), help="path to results directory")
 parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",
                         help="name of the solute to be plotted behind cells")
+parser.add_option("-S", "-Substratum", dest="substratum", default=True,
+                  action="store_false", help="turn off drawing the substratum")
 parser.add_option("-t", "--TimeOn", dest="timeon", default=False,
                         action="store_true", help="record the time in figures")
 parser.add_option("-T", "--TitleOn", dest="titleon", default=False,
@@ -91,7 +93,8 @@ def plot(iter_info, min_max_concns):
     toolbox_idynomics.color_cells_by_species(iter_info.agent_output,
                                                            species_color_dict)
     toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
-    axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
+    if options.substratum:
+        axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
     figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
     figure.inset_axes()
     if not options.solute_name == "none":
