@@ -31,7 +31,7 @@ parser.add_option("-r", "--ResultsDir", dest="results_dir",
                       default=os.getcwd(), help="path to results directory")
 parser.add_option("-s", "--SoluteName", dest="solute_name", default="none",
                         help="name of the solute to be plotted behind cells")
-parser.add_option("-S", "-Substratum", dest="substratum", default=True,
+parser.add_option("-S", "--Substratum", dest="substratum", default=True,
                   action="store_false", help="turn off drawing the substratum")
 parser.add_option("-t", "--TimeOn", dest="timeon", default=False,
                         action="store_true", help="record the time in figures")
