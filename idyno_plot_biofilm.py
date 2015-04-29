@@ -13,6 +13,10 @@ parser.add_option("-a", "--AllIter", dest="all_iter", default=False,
                   action="store_true", help="plot all iterates, ignoring -i")
 parser.add_option("-b", "--ColorBar", dest="color_bar", default=False,
                             action="store_true", help="include a colorbar")
+parser.add_option("-d", "--DotsPerInch", dest="dpi", default=300, type="int",
+                                              help="output figure resolution")
+parser.add_option("-e", "--FileExt", dest="file_ext", default=".png",
+                                      help="file extension for figure output")
 parser.add_option("-f", "--FrameOn", dest="frameon", default=False,
                         action="store_true", help="turn the figure frame on")
 parser.add_option("-F", "--FigureType", dest="figure_type", default=None,
@@ -40,6 +44,9 @@ parser.add_option("-z", "--ZeroColorBar", dest="zero_color", default=False,
 
 
 sim = toolbox_idynomics.SimulationDirectory(options.results_dir)
+
+if not options.file_ext[0] == '.':
+    options.file_ext = '.'+options.file_ext
 
 save_name = 'biofilm_'+options.solute_name
 
@@ -110,7 +117,9 @@ def plot(iter_info, min_max_concns):
     #save_num = str(counter)
     #counter += 1
     save_num = (num_digits - len(save_num))*'0' + save_num
-    figure.save(os.path.join(sim.figures_dir, save_name+'_'+save_num+'.png'))
+    save_path = os.path.join(sim.figures_dir,
+                                     save_name+'_'+save_num+options.file_ext)
+    figure.save(save_path, dpi=options.dpi)
 
 
 if options.all_iter:
